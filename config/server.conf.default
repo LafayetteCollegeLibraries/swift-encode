@@ -1,0 +1,14 @@
+# Server
+host=localhost
+port=4568
+
+# Nota Bene local file store
+nb_store_path=/usr/local/nb_store
+file_store_path=/var/lib/spp/tei
+docx_store_path=/var/lib/spp/docx
+teitodocx_bin_path=/usr/local/xslt/stylesheets
+
+# Redis
+redis_host=localhost
+redis_post=6379
+redis_key=swift-encode-messages
