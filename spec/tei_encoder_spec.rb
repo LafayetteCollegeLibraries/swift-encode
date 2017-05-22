@@ -13,7 +13,7 @@ describe SwiftPoemsProject::Encoder::TeiEncoder do
       transcript_content = File.read( File.join( File.dirname(__FILE__), 'fixtures', 'nb', '686-579V' ))
       transcript_mtime = Date.new
       
-      tei_xml = encoder.encode('686-', transcript_id, transcript_content.encode('utf-8','cp437'), transcript_mtime)
+      tei_xml = encoder.encode(transcript_id, transcript_content.encode('utf-8','cp437'), transcript_mtime)
       
       tei_doc = Nokogiri::XML(tei_xml) { |config| config.strict }
     end
@@ -24,7 +24,7 @@ describe SwiftPoemsProject::Encoder::TeiEncoder do
       transcript_content = File.read( File.join( File.dirname(__FILE__), 'fixtures', 'nb', '686-33L9' ))
       transcript_mtime = Date.new
       
-      tei_xml = encoder.encode('686-', transcript_id, transcript_content.encode('utf-8','cp437'), transcript_mtime)
+      tei_xml = encoder.encode(transcript_id, transcript_content.encode('utf-8','cp437'), transcript_mtime)
       tei_doc = Nokogiri::XML(tei_xml)
       
       tei_lines = tei_doc.xpath('//tei:div/tei:lg/tei:l', 'tei' => 'http://www.tei-c.org/ns/1.0')

@@ -5,29 +5,36 @@ module SwiftPoemsProject
 
       def self.excluded?(file, source_id = nil)
         if EXCLUDED_TRANSCRIPTS.include?(file.name)
-          raise Exception.new "File #{file.name} is excluded"
+          raise StandardError.new "File #{file.name} is excluded"
         elsif source_id && EXCLUDED_SOURCES.include?(source_id)
-          raise Exception.new "Source #{source_id} is excluded"
+          raise StandardError.new "Source #{source_id} is excluded"
         elsif EXCLUDED_SUFFIXES.map { |suffix| !!/#{Regexp.escape(suffix)}$/.match(file.name) }.reduce(:|)
-          raise Exception.new "File #{file.name} is excluded by suffix"
+          raise StandardError.new "File #{file.name} is excluded by suffix"
         elsif EXCLUDED_PREFIXES.map { |prefix| !!/^#{Regexp.escape(prefix)}.*/.match(file.name) }.reduce(:|)
-          raise Exception.new "File #{file.name} is excluded by prefix"
+          raise StandardError.new "File #{file.name} is excluded by prefix"
         elsif file.size < MIN_FILE_SIZE
-          raise Exception.new "File #{file.name} is excluded by size"
+          raise StandardError.new "File #{file.name} is excluded by size"
         end
       end
 
-      def initialize(client_secrets_path, scope, app_name, cache_path)
+      def initialize(client_secrets_path, scope, app_name, cache_path, poems_config_path)
         @service = Service.new(client_secrets_path, scope, app_name)
         @cache_path = cache_path
+        @poems_config_path = poems_config_path
+        @poems_list = YAML.load_file(poems_config_path)
       end
+
 
       # Retrieve either a cached copy or directly download a Nota Bene file from Google Drive
       #
       def get(file, source_id = nil)
-        NotaBeneStore.excluded?(file, source_id)
         
         results = {}
+        begin
+          NotaBeneStore.excluded?(file, source_id)
+        rescue
+          return results
+        end
         
         gdrive_mtime = file.modified_time
         cached_file_path = File.join(@cache_path, file.name)
@@ -60,18 +67,30 @@ module SwiftPoemsProject
       end
 
       # Retrieve a Nota Bene file for a given transcript ID
-      def transcript(transcript_id, source_id)
+      def transcript(transcript_id, source_id = nil)
         files = @service.files("name = '#{transcript_id}'")
         raise Exception.new "Failed to find the file for #{transcript_id}" if files.empty?
         get(files.last, source_id)
       end
 
-      def poems()
-        files = @service.files()
+      def poem_codes
+        @poems_list.map { |poem_code| { 'id': poem_code } }
+      end
 
-        files.reject { |file| @excluded_files.include? file.name }.map do |file|
-          get(file)
-        end
+      def seed_poem_codes
+        poem_codes = @service.files("mimeType != 'application/vnd.google-apps.folder'").select { |file| file.name.length == 8 }.map do |file|
+
+          begin
+            NotaBeneStore.excluded?(file, nil)
+          rescue
+            next
+          end
+
+          file.name[0,4]
+        end.uniq
+
+        File.open(@poems_config_path, 'wb') { |f| f.write(YAML.dump(poem_codes)) }
+        @poems_list = YAML.load_file(@poems_config_path)
       end
       
       def get_cached_transcripts(poem_id: nil)
@@ -89,11 +108,11 @@ module SwiftPoemsProject
         filtered_files = []
 
         files.each do |file|
-          if !@excluded_files.include?(file.name) && file.name != poem_id && /^#{Regexp.escape(poem_id)}/.match(file.name)
+          if file.name != poem_id && /^#{Regexp.escape(poem_id)}/.match(file.name)
             filtered_files << file
           end
         end
-        
+
         filtered_files.map do |file|
           get(file)
         end

@@ -7,7 +7,7 @@ module SwiftPoemsProject
         @cache_path = cache_path
       end
       
-      def _encode(source_id, transcript_id, nota_bene_content)
+      def _encode(transcript_id, nota_bene_content)
         nota_bene = SwiftPoemsProject::NotaBene::Document.new(content: nota_bene_content)
         transcript = SwiftPoemsProject::Transcript.new(nota_bene, 'reading')
 
@@ -20,7 +20,7 @@ module SwiftPoemsProject
         return transcript
       end
       
-      def encode(source_id, transcript_id, nota_bene_content, nota_bene_mtime)
+      def encode(transcript_id, nota_bene_content, nota_bene_mtime)
         
         cached_file_path = File.join(@cache_path, transcript_id + '.tei.xml')
         
@@ -33,13 +33,13 @@ module SwiftPoemsProject
           if !nota_bene_mtime.nil? && nota_bene_mtime <= cached_mtime
             result = File.read(cached_file_path)
           else
-            transcript = _encode(source_id, transcript_id, nota_bene_content)
+            transcript = _encode(transcript_id, nota_bene_content)
             
             File.open(cached_file_path, 'wb') {|f| f.write(transcript.tei.document.to_xml) }
             result = transcript.tei.document.to_xml
           end
         else
-          transcript = _encode(source_id, transcript_id, nota_bene_content)
+          transcript = _encode(transcript_id, nota_bene_content)
           File.open(cached_file_path, 'wb') {|f| f.write(transcript.tei.document.to_xml) }
           result = transcript.tei.document.to_xml
         end

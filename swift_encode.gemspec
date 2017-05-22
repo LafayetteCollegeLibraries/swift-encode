@@ -15,5 +15,15 @@ Gem::Specification.new do |spec|
   spec.test_files  = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
   spec.homepage    = 'https://github.com/LafayetteCollegeLibraries/swift-encode'
-  spec.license     = 'GPLv3'
+  spec.license     = 'GPL-3.0'
+
+  spec.add_dependency 'fastercsv', '~> 1.5'
+  spec.add_dependency 'google-api-client', '~> 0.11'
+  spec.add_dependency 'mail', '~> 2.6'
+  spec.add_dependency 'nokogiri', '~> 1.7'
+  spec.add_dependency 'parseconfig', '~> 1.0'
+  spec.add_dependency 'thor', '~> 0.19'
+
+  spec.add_development_dependency 'rspec', '~> 3.5'
+  spec.add_development_dependency 'rspec-mocks', '~> 3.5'
 end

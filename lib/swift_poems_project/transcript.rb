@@ -52,12 +52,14 @@ module SwiftPoemsProject
 
       @nota_bene = nota_bene
       @tei = TEI::Document.new
+      nota_bene_content = @nota_bene.content
+      nota_bene_content = nota_bene_content.gsub(/·/, '')
 
-      lines = @nota_bene.content.split(/\$\$\r\n--\r\n\S{8}?\s{3}/)
+      lines = nota_bene_content.split(/\$\$\r\n--\r\n\S{8}?\s{3}/)
 
       # Handle anomalies for the header delimiter
       if lines.length != 2
-        lines = @nota_bene.content.split(/\$\$\s*\r?\n\S{8}?\s{3}/)
+        lines = nota_bene_content.split(/\$\$\s*\r?\n\S{8}?\s{3}/)
       end
 
       # Parsing the header
